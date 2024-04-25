@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
       width: 20,
       height: 20,
       channels: 4,
-      background: { r: rc(), g: rc(), b: rc(), alpha: 1.0 }
+      background: { r: 0, g: rc(), b: 0, alpha: 1.0 }
     }
   })
   .raw()
