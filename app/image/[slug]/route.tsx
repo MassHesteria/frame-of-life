@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 const { createCanvas } = require('canvas');
 const { GIFEncoder } = require('gifenc');
+import fs from 'fs'
+import { BACKGROUND } from './background'
 
 // Function to get the value of a cell at a specific row and column
 function getCellValue(
@@ -152,7 +154,7 @@ export async function GET(
   }
 
   const logo = size * 40
-  const full = new Uint8Array(logo + grid.length)
+  /*const full = new Uint8Array(logo + grid.length)
   const text = textToPixels("Frame of Life", size, 40, 36, family)
 
   for (let i = 0; i < text.length; i++) {
@@ -162,6 +164,13 @@ export async function GET(
   for (let i = logo - size; i < logo; i++) {
     full[i] = 1
   }
+
+  let output = 'export const BACKGROUND = [\n'
+  full.forEach(p => output += `${p},`)
+  output += '\n];';
+  fs.writeFileSync('background.js', output)*/
+
+  const full = new Uint8Array(BACKGROUND);
 
   const gif = GIFEncoder()
   const frames = single ? 1 : 100
