@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "canvas": "^2.11.2",
     "frames.js": "^0.14.0",
     "gifenc": "^1.0.3",
     "next": "14.2.3",
