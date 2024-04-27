@@ -9,14 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "canvas": "^2.11.2",
     "frames.js": "^0.14.0",
     "gifenc": "^1.0.3",
-    "gifencoder": "^2.0.1",
     "next": "14.2.3",
     "react": "^18",
-    "react-dom": "^18",
-    "sharp": "^0.33.3"
+    "react-dom": "^18"
   },
   "devDependencies": {
     "@types/node": "^20",
