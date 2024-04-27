@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 const { GIFEncoder } = require('gifenc');
 import fs from 'fs'
+import path from 'path'
 //import { BACKGROUND } from './background'
 
 // Function to get the value of a cell at a specific row and column
@@ -109,7 +110,9 @@ export async function GET(
   }
 
   const logo = size * 40
-  const full = new Uint8Array(fs.readFileSync('background.dat'))
+  let backgroundPath = path.join(process.cwd(), 'background.dat');
+  let file = fs.readFileSync(backgroundPath);
+  const full = new Uint8Array(file)
   //const full = new Uint8Array(BACKGROUND);
 
   const gif = GIFEncoder()
