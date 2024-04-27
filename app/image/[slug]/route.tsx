@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-const { createCanvas } = require('canvas');
+const { createCanvas, registerFont } = require('canvas');
 const { GIFEncoder } = require('gifenc');
+
+registerFont('./IBMPlexMono-Regular.ttf', { family: 'IBMPlexMono' })
 
 // Function to get the value of a cell at a specific row and column
 function getCellValue(
@@ -69,9 +71,10 @@ function textToPixels(
   // Set the text attributes
   ctx.fillStyle = "white";
   ctx.fillRect(0, 0, width, height);
-  ctx.font = `bold ${fontSize}px Arial`;
+  ctx.font = `${fontSize}px IBMPlexMono`;
   ctx.textBaseline = "top";
   ctx.fillStyle = "black";
+  ctx.textTransform = 'uppercase'
 
   // Calculate text position to center it
   const textWidth = ctx.measureText(text).width;
@@ -150,7 +153,7 @@ export async function GET(
   const text = textToPixels("Frame of Life", size, 40, 36)
 
   for (let i = 0; i < text.length; i++) {
-    full[(2*size) + i] = text[i]
+    full[i] = text[i]
   }
 
   for (let i = logo - size; i < logo; i++) {
