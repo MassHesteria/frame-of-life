@@ -69,7 +69,7 @@ function textToPixels(
   // Set the text attributes
   ctx.fillStyle = "white";
   ctx.fillRect(0, 0, width, height);
-  ctx.font = `bold ${fontSize}px Consolas`;
+  ctx.font = `bold ${fontSize}px Arial`;
   ctx.textBaseline = "top";
   ctx.fillStyle = "black";
 
