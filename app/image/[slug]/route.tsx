@@ -15,19 +15,22 @@ export async function GET(
   const cols = rows
 
   const { slug } = params;
-  console.log(slug);
-
-  const cnt = parseInt(slug, 16)
-  const a = cnt % cols
-  const b = Math.floor(cnt / rows)
-
-  console.log('row:',b,'col:',a)
+  //console.log(slug);
 
   const palette = [
     [240, 240, 240],
     [200, 200, 200],
     [40, 220, 220],
   ]
+
+  const data = new Uint8Array(rows*cols)
+  let pos = 0
+  for (let i = 0; i < slug.length; i++) {
+    const hex = parseInt(slug[i], 16)
+    for (let j = 0; j < 4; j++) {
+      data[pos++] = (hex >> j) & 0x1
+    }
+  }
 
   const grid = new Uint8Array(size*size)
 
@@ -48,10 +51,17 @@ export async function GET(
     }
   }
 
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      if (data[(row * rows) + col] == 1) {
+        setCell(row, col, 2)
+      }
+    }
+  }
+
   const gif = GIFEncoder()
   const frames = single ? 1 : 15
   for (let i = 0; i < frames; i++) {
-    setCell(b + i, a + i, 2)
     gif.writeFrame(grid, size, size, { palette, delay: 1000 })
   }
   gif.finish()
