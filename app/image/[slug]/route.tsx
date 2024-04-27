@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-const { createCanvas } = require('canvas');
 const { GIFEncoder } = require('gifenc');
 import fs from 'fs'
-import { BACKGROUND } from './background'
+//import { BACKGROUND } from './background'
 
 // Function to get the value of a cell at a specific row and column
 function getCellValue(
@@ -59,56 +58,12 @@ const computeNextFrame = (data: Uint8Array, rows: number, cols: number) => {
    newGrid.forEach((v, i) => (data[i] = v));
 };
 
-function textToPixels(
-   text: string,
-   width: number,
-   height: number,
-   fontSize: number,
-   fontFamily: string
-) {
-  const canvas = createCanvas(width, height);
-  const ctx = canvas.getContext("2d");
-
-  // Set the text attributes
-  ctx.fillStyle = "white";
-  ctx.fillRect(0, 0, width, height);
-  ctx.font = `${fontSize}px ${fontFamily}`;
-  ctx.textBaseline = "top";
-  ctx.fillStyle = "black";
-  ctx.textTransform = 'uppercase'
-
-  // Calculate text position to center it
-  const textWidth = ctx.measureText(text).width;
-  const textX = (width - textWidth) / 2;
-  const textY = (height - fontSize) / 2;
-
-  // Render the text on the canvas
-  ctx.fillText(text, textX, textY);
-
-  // Read pixel data
-  const imageData = ctx.getImageData(0, 0, width, height);
-  const data = imageData.data;
-
-  const binaryArray = [];
-  for (let i = 0; i < data.length; i += 4) {
-    // Assuming the background is white, and text is black
-    const isBlack = data[i] === 0 && data[i + 1] === 0 && data[i + 2] === 0;
-    binaryArray.push(isBlack ? 3 : 0);
-  }
-
-  return binaryArray;
-}
-
 export async function GET(
    req: NextRequest,
    { params }: { params: { slug: string}}
 ) {
   const searchParams = req.nextUrl.searchParams
   const single = searchParams.get('single')
-  let family = searchParams.get('family')
-  if (!family) {
-    family = 'Arial'
-  }
 
   const size = 374
   const num = 14
@@ -154,23 +109,8 @@ export async function GET(
   }
 
   const logo = size * 40
-  /*const full = new Uint8Array(logo + grid.length)
-  const text = textToPixels("Frame of Life", size, 40, 36, family)
-
-  for (let i = 0; i < text.length; i++) {
-    full[i] = text[i]
-  }
-
-  for (let i = logo - size; i < logo; i++) {
-    full[i] = 1
-  }
-
-  let output = 'export const BACKGROUND = [\n'
-  full.forEach(p => output += `${p},`)
-  output += '\n];';
-  fs.writeFileSync('background.js', output)*/
-
-  const full = new Uint8Array(BACKGROUND);
+  const full = new Uint8Array(fs.readFileSync('background.dat'))
+  //const full = new Uint8Array(BACKGROUND);
 
   const gif = GIFEncoder()
   const frames = single ? 1 : 100
