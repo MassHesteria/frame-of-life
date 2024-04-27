@@ -5,6 +5,9 @@ export async function GET(
    req: NextRequest,
    { params }: { params: { slug: string}}
 ) {
+  const searchParams = req.nextUrl.searchParams
+  const single = searchParams.get('single')
+
   const size = 356
   const num = 20
 
@@ -46,7 +49,8 @@ export async function GET(
   }
 
   const gif = GIFEncoder()
-  for (let i = 0; i < 15; i++) {
+  const frames = single ? 1 : 15
+  for (let i = 0; i < frames; i++) {
     setCell(b + i, a + i, 2)
     gif.writeFrame(grid, size, size, { palette, delay: 1000 })
   }
