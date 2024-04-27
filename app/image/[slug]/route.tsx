@@ -33,7 +33,7 @@ function countLiveNeighbors(
    return count;
 }
 
-// Glider: 4000010083
+// Glider: 40000001000083
 
 const computeNextFrame = (data: Uint8Array, rows: number, cols: number) => {
    const newGrid = new Uint8Array(rows * cols);
@@ -63,11 +63,11 @@ export async function GET(
   const searchParams = req.nextUrl.searchParams
   const single = searchParams.get('single')
 
-  const size = 356
-  const num = 20
+  const size = 374
+  const num = 14
 
-  const rows = Math.floor(size/num)
-  const cols = rows
+  const rows = 25
+  const cols = 25
 
   const { slug } = params;
   //console.log(slug);
