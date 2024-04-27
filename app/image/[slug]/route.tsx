@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-const { createCanvas, registerFont } = require('canvas');
+const { createCanvas } = require('canvas');
 const { GIFEncoder } = require('gifenc');
-
-registerFont('./fonts/GeistMono-Regular.ttf', { family: 'CustomFont'});
 
 // Function to get the value of a cell at a specific row and column
 function getCellValue(
