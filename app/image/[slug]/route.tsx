@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const { createCanvas, registerFont } = require('canvas');
 const { GIFEncoder } = require('gifenc');
 
-registerFont('./IBMPlexMono-Regular.ttf', { family: 'IBMPlexMono' })
+registerFont('./fonts/GeistMono-Regular.ttf', { family: 'CustomFont'});
 
 // Function to get the value of a cell at a specific row and column
 function getCellValue(
@@ -63,7 +63,8 @@ function textToPixels(
    text: string,
    width: number,
    height: number,
-   fontSize: number
+   fontSize: number,
+   fontFamily: string
 ) {
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext("2d");
@@ -71,7 +72,7 @@ function textToPixels(
   // Set the text attributes
   ctx.fillStyle = "white";
   ctx.fillRect(0, 0, width, height);
-  ctx.font = `${fontSize}px IBMPlexMono`;
+  ctx.font = `${fontSize}px ${fontFamily}`;
   ctx.textBaseline = "top";
   ctx.fillStyle = "black";
   ctx.textTransform = 'uppercase'
@@ -104,6 +105,10 @@ export async function GET(
 ) {
   const searchParams = req.nextUrl.searchParams
   const single = searchParams.get('single')
+  let family = searchParams.get('family')
+  if (!family) {
+    family = 'Arial'
+  }
 
   const size = 374
   const num = 14
@@ -150,7 +155,7 @@ export async function GET(
 
   const logo = size * 40
   const full = new Uint8Array(logo + grid.length)
-  const text = textToPixels("Frame of Life", size, 40, 36)
+  const text = textToPixels("Frame of Life", size, 40, 36, family)
 
   for (let i = 0; i < text.length; i++) {
     full[i] = text[i]
