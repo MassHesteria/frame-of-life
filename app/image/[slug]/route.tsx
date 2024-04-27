@@ -113,7 +113,6 @@ export async function GET(
   let backgroundPath = path.join(process.cwd(), 'background.dat');
   let file = fs.readFileSync(backgroundPath);
   const full = new Uint8Array(file)
-  //const full = new Uint8Array(BACKGROUND);
 
   const gif = GIFEncoder()
   const frames = single ? 1 : 100
