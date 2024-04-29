@@ -30,7 +30,7 @@ function getCellValue(
    row: number,
    col: number
 ) {
-   if (row < 1 || row >= rows || col < 1 || col >= cols) {
+   if (row < 0 || row >= rows || col < 0 || col >= cols) {
       return 0; // Out of bounds, treat as dead
    }
    return grid[row * cols + col];
@@ -54,12 +54,12 @@ function countLiveNeighbors(
    return count;
 }
 
-// Glider: 40000001000083
+// Glider: 2000004000007
 
 const computeNextFrame = (data: Uint8Array, rows: number, cols: number) => {
    const newGrid = new Uint8Array(rows * cols);
-   for (let row = 1; row < rows; row++) {
-      for (let col = 1; col < cols; col++) {
+   for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
          const neighbors = countLiveNeighbors(data, rows, cols, row, col);
          const cell = getCellValue(data, rows, cols, row, col);
          if (cell === 1) {
@@ -87,8 +87,8 @@ export async function GET(
   const size = 374
   const num = 14
 
-  const rows = 25
-  const cols = 25
+  const rows = 24
+  const cols = 24
 
   const { slug } = params;
   //console.log(slug);
@@ -101,6 +101,7 @@ export async function GET(
     [0, 0, 0],
   ]
 
+  const grid = new Uint8Array(size*size)
   const data = new Uint8Array(rows*cols)
 
   let pos = 0
@@ -111,7 +112,7 @@ export async function GET(
     }
   }
 
-  const grid = new Uint8Array(size*size)
+  // Draw the grid lines
   for (let i = num; i < size; i += (num+1)) {
     for (let j = num; j < size; j++) {
       grid[(j*size) + i] = 1
@@ -131,27 +132,28 @@ export async function GET(
 
   const logo = size * 40
   let backgroundPath = path.join(process.cwd(), 'background-by-hand.png');
-  const { img_data, img_width, img_height } = await readImage(backgroundPath)
+  const { img_data } = await readImage(backgroundPath)
 
   // Apply palette to RGBA data to get an indexed bitmap
   const index = applyPalette(img_data, palette, 'rgb444');
 
-  //let file = fs.readFileSync(backgroundPath);
+  // Initialize the buffer using the index bitmap
   const full = new Uint8Array(index)
 
   const gif = GIFEncoder()
   const frames = single ? 1 : 100
   for (let i = 0; i < frames; i++) {
     // Update the cells
-    for (let row = 1; row < rows; row++) {
-      for (let col = 1; col < cols; col++) {
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
         if (data[(row * rows) + col] == 1) {
-          setCell(row, col, 2)
+          setCell(row + 1, col + 1, 2)
         } else {
-          setCell(row, col, 0)
+          setCell(row + 1, col + 1, 0)
         }
       }
     }
+    // Copy the values from the grid into the full buffer
     let pos = logo + (size * 14)
     let k = size * 14
     for (let i = 0; i < size; i++) {
@@ -164,10 +166,13 @@ export async function GET(
         full[pos++] = grid[k++]
       }
     }
+    // Write the full buffer as a frame
     gif.writeFrame(full, size, size + 40, { palette, delay: 250 })
+    // Not moving anymore?
     if (data.find(p => p > 0) == undefined) {
       break;
     }
+    // Update the cell stats
     computeNextFrame(data, rows, cols)
   }
   gif.finish()
