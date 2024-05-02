@@ -5,15 +5,29 @@ import { State, frames, getHostName } from "../frames";
 const handleRequest = frames(async (ctx: any) => {
   const timestamp = `${Date.now()}`
   const baseRoute = getHostName() + "/frames?ts=" + timestamp
-  //const state = ctx.state as State;
+  const state = ctx.state as State;
+
+  // Modes:
+  // 0 - Edit
+  // 1 - Instructions
+  // 2 - Options
+  // 3 - Play
+  //
+  // NOTES:
+  // - Allow share without button press
+  // - URL with color and encoded image as search params
 
   if (ctx.message) {
     if (!ctx.message.isValid) {
       throw new Error('Could not validate request')
     }
     const encoded = 2000004000007
+    const color =
+      state.color.red.toString(16).padStart(2, '0') +
+      state.color.green.toString(16).padStart(2, '0') +
+      state.color.blue.toString(16).padStart(2, '0')
     return {
-      image: getHostName() + `/image/${encoded}`,
+      image: getHostName() + `/image/${encoded}?color=${color}`,
       imageOptions: {
         aspectRatio: '1:1'
       },
@@ -21,8 +35,14 @@ const handleRequest = frames(async (ctx: any) => {
         <Button action="post" target={baseRoute}>
           Play
         </Button>,
-        <Button action="post" target={baseRoute + '&instructions=1'}>
+        <Button action="post" target={baseRoute + '&mode=1'}>
           Instructions
+        </Button>,
+        <Button action="post" target={baseRoute + '&mode=2'}>
+          Options
+        </Button>,
+        <Button action="post" target={baseRoute + '&mode=2'}>
+          Share
         </Button>,
       ]
     };
@@ -107,7 +127,7 @@ const handleRequest = frames(async (ctx: any) => {
       <Button action="post" target={baseRoute}>
         Play
       </Button>,
-      <Button action="post" target={baseRoute + '&instructions=1'}>
+      <Button action="post" target={baseRoute + '&mode=1'}>
         Instructions
       </Button>,
     ]

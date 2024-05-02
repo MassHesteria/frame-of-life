@@ -83,6 +83,19 @@ export async function GET(
 ) {
   const searchParams = req.nextUrl.searchParams
   const single = searchParams.get('single')
+  const color = searchParams.get('color')
+
+  const getColor = () => {
+    if (color == undefined) {
+      return [ 40, 220, 220 ]
+    }
+    const num = parseInt(color, 16)
+    return [
+      (num >> 16) & 0xFF,
+      (num >> 8) & 0xFF,
+      num & 0xFF
+    ]
+  }
 
   const size = 374
   const num = 14
@@ -96,7 +109,7 @@ export async function GET(
   const palette = [
     [240, 240, 240],
     [210, 210, 210],
-    [40, 220, 220],
+    getColor(),
     [128, 0, 128],
     [0, 0, 0],
   ]

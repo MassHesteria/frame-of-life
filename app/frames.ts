@@ -27,9 +27,16 @@ const getHubRoute = (): string => {
 // Frame setup
 //-------------------------------------------------------------------
 
+export type Color = {
+  red: number;
+  green: number;
+  blue: number;
+}
+
 export type State = {
   cells: boolean[][];
   count: number;
+  color: Color;
 }
  
 export const frames = createFrames<State>({
@@ -38,6 +45,11 @@ export const frames = createFrames<State>({
   })],
   initialState: {
     cells: [],
-    count: 0
+    count: 0,
+    color: {
+      red: 40,
+      green: 220,
+      blue: 220
+    }
   }
 });
