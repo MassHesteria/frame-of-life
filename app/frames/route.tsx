@@ -1,25 +1,11 @@
 /* eslint-disable react/jsx-key */
 import { Button } from "frames.js/next";
 import { State, frames, getHostName } from "../frames";
-import { getUserDataForFid } from "frames.js";
-
-const getButtons = (mode: number) => {
-  const timestamp = `${Date.now()}`
-  const baseRoute = getHostName() + "/frames?ts=" + timestamp
-  return [
-    <Button action="post" target={baseRoute}>
-      Play
-    </Button>,
-    <Button action="post" target={baseRoute + '&instructions=1'}>
-      Instructions
-    </Button>,
-  ]
-}
 
 const handleRequest = frames(async (ctx: any) => {
   const timestamp = `${Date.now()}`
   const baseRoute = getHostName() + "/frames?ts=" + timestamp
-  const state = ctx.state as State;
+  //const state = ctx.state as State;
 
   if (ctx.message) {
     if (!ctx.message.isValid) {
@@ -31,7 +17,14 @@ const handleRequest = frames(async (ctx: any) => {
       imageOptions: {
         aspectRatio: '1:1'
       },
-      buttons: getButtons(0)
+      buttons: [
+        <Button action="post" target={baseRoute}>
+          Play
+        </Button>,
+        <Button action="post" target={baseRoute + '&instructions=1'}>
+          Instructions
+        </Button>,
+      ]
     };
   }
 
@@ -110,7 +103,14 @@ const handleRequest = frames(async (ctx: any) => {
 
   return {
     image: 'logo.png',
-    buttons: getButtons(0)
+    buttons: [
+      <Button action="post" target={baseRoute}>
+        Play
+      </Button>,
+      <Button action="post" target={baseRoute + '&instructions=1'}>
+        Instructions
+      </Button>,
+    ]
   };
 });
 
