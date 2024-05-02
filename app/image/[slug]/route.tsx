@@ -54,7 +54,7 @@ function countLiveNeighbors(
    return count;
 }
 
-// Glider: 2000004000007
+// Glider: 000020000020000C1
 
 const computeNextFrame = (data: Uint8Array, rows: number, cols: number) => {
    const newGrid = new Uint8Array(rows * cols);
@@ -100,8 +100,8 @@ export async function GET(
   const size = 374
   const num = 14
 
-  const rows = 24
-  const cols = 24
+  const rows = 21
+  const cols = 23
 
   const { slug } = params;
   //console.log(slug);
@@ -127,11 +127,17 @@ export async function GET(
     }
   }
 
-  // Draw the grid lines
+  // Draw the horizontal grid lines
   for (let i = num; i < width; i += (num+1)) {
-    for (let j = num; j < width; j++) {
-      grid[(j*width) + i] = 1
+    for (let j = num; j < width - num; j++) {
       grid[(i*width) + j] = 1
+    }
+  }
+
+  // Draw the vertical grid lines
+  for (let i = num; i < width; i += (num+1)) {
+    for (let j = num; j < height - 4; j++) {
+      grid[(j*width) + i] = 1
     }
   }
 
@@ -159,9 +165,10 @@ export async function GET(
   const frames = single ? 1 : 100
   for (let i = 0; i < frames; i++) {
     // Update the cells
+    let t = 0
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
-        if (data[(row * rows) + col] == 1) {
+        if (data[t++] == 1) {
           setCell(row + 1, col + 1, 2)
         } else {
           setCell(row + 1, col + 1, 0)

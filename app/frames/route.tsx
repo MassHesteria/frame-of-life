@@ -21,13 +21,13 @@ const handleRequest = frames(async (ctx: any) => {
     if (!ctx.message.isValid) {
       throw new Error('Could not validate request')
     }
-    const encoded = 2000004000007
+    const encoded = '000020000020000C1'
     const color =
       state.color.red.toString(16).padStart(2, '0') +
       state.color.green.toString(16).padStart(2, '0') +
       state.color.blue.toString(16).padStart(2, '0')
     return {
-      image: getHostName() + `/image/${encoded}?color=${color}`,
+      image: getHostName() + `/image/${encoded}?color=${color}&ts=${timestamp}`,
       imageOptions: {
         aspectRatio: '1:1'
       },
