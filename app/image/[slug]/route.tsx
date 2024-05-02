@@ -101,7 +101,9 @@ export async function GET(
     [0, 0, 0],
   ]
 
-  const grid = new Uint8Array(size*size)
+  const width = size
+  const height = size - 40
+  const grid = new Uint8Array(width*height)
   const data = new Uint8Array(rows*cols)
 
   let pos = 0
@@ -113,19 +115,19 @@ export async function GET(
   }
 
   // Draw the grid lines
-  for (let i = num; i < size; i += (num+1)) {
-    for (let j = num; j < size; j++) {
-      grid[(j*size) + i] = 1
-      grid[(i*size) + j] = 1
+  for (let i = num; i < width; i += (num+1)) {
+    for (let j = num; j < width; j++) {
+      grid[(j*width) + i] = 1
+      grid[(i*width) + j] = 1
     }
   }
 
   const setCell = (row: number, col: number, color: number) => {
-    const idx = (row * size * (num + 1)) + (col * (num + 1))
+    const idx = (row * width * (num + 1)) + (col * (num + 1))
 
     for (let i = 0; i < num; i++) {
       for (let j = 0; j < num; j++) {
-        grid[idx + i + (size * j)] = color
+        grid[idx + i + (width * j)] = color
       }
     }
   }
@@ -167,7 +169,7 @@ export async function GET(
       }
     }
     // Write the full buffer as a frame
-    gif.writeFrame(full, size, size + 40, { palette, delay: 250 })
+    gif.writeFrame(full, size, size, { palette, delay: 250 })
     // Not moving anymore?
     if (data.find(p => p > 0) == undefined) {
       break;

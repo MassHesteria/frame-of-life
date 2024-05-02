@@ -1,0 +1,118 @@
+/* eslint-disable react/jsx-key */
+import { Button } from "frames.js/next";
+import { State, frames, getHostName } from "../frames";
+import { getUserDataForFid } from "frames.js";
+
+const getButtons = (mode: number) => {
+  const timestamp = `${Date.now()}`
+  const baseRoute = getHostName() + "/frames?ts=" + timestamp
+  return [
+    <Button action="post" target={baseRoute}>
+      Play
+    </Button>,
+    <Button action="post" target={baseRoute + '&instructions=1'}>
+      Instructions
+    </Button>,
+  ]
+}
+
+const handleRequest = frames(async (ctx: any) => {
+  const timestamp = `${Date.now()}`
+  const baseRoute = getHostName() + "/frames?ts=" + timestamp
+  const state = ctx.state as State;
+
+  if (ctx.message) {
+    if (!ctx.message.isValid) {
+      throw new Error('Could not validate request')
+    }
+    const encoded = 2000004000007
+    return {
+      image: getHostName() + `/image/${encoded}`,
+      imageOptions: {
+        aspectRatio: '1:1'
+      },
+      buttons: getButtons(0)
+    };
+  }
+
+    /*
+    console.log(JSON.stringify(ctx))
+    const fid = 373258
+    let values = await getPFPs(fid)
+    if (values.length <= 0) {
+      return {
+        image: (
+          <div>Install Action and Bookmark PFPs</div>
+        ),
+        buttons: [
+          <Button action="post" target={baseRoute}>
+            Click
+          </Button>,
+        ],
+      }
+    }
+
+    if (ctx.pressedButton) {
+      if (ctx.pressedButton.index == 1) {
+        state.index = (state.index + 1) % values.length
+      } else if (ctx.pressedButton.index == 2) {
+        await removePFP(fid, values[state.index])
+        values = await getPFPs(fid)
+        state.index %= values.length
+      }
+    }
+
+    const pfp = values[state.index]
+    const userData = await getUserDataForFid({ fid: pfp.fid })
+    const profileLink = `https://warpcast.com`
+    let buttonText = userData?.displayName
+    if (!buttonText) {
+      buttonText = 'No profile available'
+    }
+
+    const getButtons = () => {
+      // Show remove button for manage mode
+      if (state.manage) {
+        return [
+          <Button action="post" target={baseRoute}>
+            Next ⏭
+          </Button>,
+          <Button action="post" target={baseRoute}>
+            Remove ❌
+          </Button>,
+          <Button action="link" target={profileLink}>
+            {buttonText}
+          </Button>,
+        ]
+      }
+      return [
+          <Button action="post" target={baseRoute}>
+            Next ⏭
+          </Button>,
+          <Button action="link" target={profileLink}>
+            {buttonText}
+          </Button>,
+      ]
+    }
+
+    return {
+      image: pfp.url,
+      imageOptions: {
+        aspectRatio: '1:1',
+      },
+      buttons: getButtons(),
+      state
+    }
+   }
+
+  const installLink = 'https://warpcast.com/~/add-cast-action?url=' +
+    encodeURIComponent(getHostName() + '/action')*/
+
+  return {
+    image: 'logo.png',
+    buttons: getButtons(0)
+  };
+});
+
+export const GET = handleRequest;
+export const POST = handleRequest;
