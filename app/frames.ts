@@ -45,7 +45,7 @@ export const frames = createFrames<State>({
   })],
   initialState: {
     cells: [],
-    count: 0,
+    count: 100,
     color: {
       red: 40,
       green: 220,

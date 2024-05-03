@@ -99,7 +99,6 @@ export async function GET(
    { params }: { params: { slug: string}}
 ) {
   const searchParams = req.nextUrl.searchParams
-  const single = searchParams.get('single')
   const frames = searchParams.get('frames') || '100'
   const color = searchParams.get('color')
 

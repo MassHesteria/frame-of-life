@@ -5,7 +5,61 @@ import { State, frames, getHostName } from "../frames";
 const handleRequest = frames(async (ctx: any) => {
   const timestamp = `${Date.now()}`
   const baseRoute = getHostName() + "/frames?ts=" + timestamp
-  const state = ctx.state as State;
+  const initCells = ctx.searchParams?.cells
+  const initColor = ctx.searchParams?.color
+  const initCount = ctx.searchParams?.count
+
+  // No message? User has not clicked a button yet
+  if (!ctx.message) {
+
+    // This is for sharing
+    if (initCells && initColor && initCount) {
+      return {
+        image: getHostName() +
+          `/image/${initCells}?color=${initColor}&frames=${initCount}&ts=${timestamp}`,
+        imageOptions: {
+          aspectRatio: "1:1",
+        },
+        buttons: [
+          <Button action="post" target={baseRoute + `&mode=0&cells=${initCells}&color=${initColor}&count=${initCount}`}>
+            Start
+          </Button>,
+          <Button action="post" target={baseRoute + '&mode=1'}>
+            Instructions
+          </Button>,
+        ]
+      };
+    }
+    
+    // Normal starting frame
+    return {
+      image: 'logo.png',
+      buttons: [
+        <Button action="post" target={baseRoute}>
+          Start
+        </Button>,
+        <Button action="post" target={baseRoute + '&mode=1'}>
+          Instructions
+        </Button>,
+      ]
+    };
+  }
+
+  const mode = ctx.searchParams?.mode || 0
+  const state = ctx.state as State
+
+  let cells = initCells
+  let count = initCount
+  let color = initColor
+  if (!cells) {
+    cells = state.cells
+  }
+  if (!count) {
+    count = state.count
+  }
+  if (!color) {
+    color = state.color
+  }
 
   // Modes:
   // 0 - Edit
@@ -17,36 +71,76 @@ const handleRequest = frames(async (ctx: any) => {
   // - Allow share without button press
   // - URL with color and encoded image as search params
 
-  if (ctx.message) {
-    if (!ctx.message.isValid) {
-      throw new Error('Could not validate request')
-    }
+  if (!ctx.message.isValid) {
+    throw new Error('Could not validate request')
+  }
+
+  if (mode == 0) {
     const encoded = '000020000020000C1'
-    const color =
-      state.color.red.toString(16).padStart(2, '0') +
-      state.color.green.toString(16).padStart(2, '0') +
-      state.color.blue.toString(16).padStart(2, '0')
+    const colorStr =
+      color.red.toString(16).padStart(2, '0') +
+      color.green.toString(16).padStart(2, '0') +
+      color.blue.toString(16).padStart(2, '0')
     return {
-      image: getHostName() + `/image/${encoded}?color=${color}&ts=${timestamp}`,
+      image: getHostName() +
+        `/image/${encoded}?color=${colorStr}&frames=1&ts=${timestamp}`,
       imageOptions: {
-        aspectRatio: '1:1'
+        aspectRatio: "1:1",
       },
+      state: {
+        cells,
+        count,
+        color
+      },
+      textInput: 'Enter cells: aw bc ...',
       buttons: [
-        <Button action="post" target={baseRoute}>
+        <Button action="post" target={baseRoute + "&mode=1"}>
           Play
         </Button>,
-        <Button action="post" target={baseRoute + '&mode=1'}>
-          Instructions
+        <Button action="post" target={baseRoute}>
+          Toggle Cell
         </Button>,
-        <Button action="post" target={baseRoute + '&mode=2'}>
+        <Button action="post" target={baseRoute + "&mode=2"}>
           Options
         </Button>,
-        <Button action="post" target={baseRoute + '&mode=2'}>
-          Share
+        <Button action="post" target={baseRoute + "&mode=2"}>
+          Instructions
         </Button>,
-      ]
+      ],
     };
   }
+
+  const encoded = '000020000020000C1'
+  const colorStr =
+    color.red.toString(16).padStart(2, '0') +
+    color.green.toString(16).padStart(2, '0') +
+    color.blue.toString(16).padStart(2, '0')
+  return {
+    image: getHostName() +
+      `/image/${encoded}?color=${colorStr}&frames=${count}&ts=${timestamp}`,
+    imageOptions: {
+      aspectRatio: "1:1",
+    },
+    state: {
+      cells,
+      count,
+      color
+    },
+    buttons: [
+      <Button action="post" target={baseRoute + "&mode=0"}>
+        Edit
+      </Button>,
+      <Button action="post" target={baseRoute + "&mode=2"}>
+        Options
+      </Button>,
+      <Button action="post" target={baseRoute + "&mode=3"}>
+        Instructions
+      </Button>,
+      <Button action="link" target={baseRoute + "&mode=2"}>
+        Share
+      </Button>,
+    ],
+  };
 
     /*
     console.log(JSON.stringify(ctx))
@@ -121,17 +215,6 @@ const handleRequest = frames(async (ctx: any) => {
   const installLink = 'https://warpcast.com/~/add-cast-action?url=' +
     encodeURIComponent(getHostName() + '/action')*/
 
-  return {
-    image: 'logo.png',
-    buttons: [
-      <Button action="post" target={baseRoute}>
-        Play
-      </Button>,
-      <Button action="post" target={baseRoute + '&mode=1'}>
-        Instructions
-      </Button>,
-    ]
-  };
 });
 
 export const GET = handleRequest;
