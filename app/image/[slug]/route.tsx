@@ -77,12 +77,30 @@ const computeNextFrame = (data: Uint8Array, rows: number, cols: number) => {
    newGrid.forEach((v, i) => (data[i] = v));
 };
 
+function areUint8ArraysEqual(array1: Uint8Array, array2: Uint8Array) {
+    // Check if the arrays have the same length
+    if (array1.length !== array2.length) {
+        return false;
+    }
+    
+    // Iterate over each element and compare
+    for (let i = 0; i < array1.length; i++) {
+        if (array1[i] !== array2[i]) {
+            return false;
+        }
+    }
+    
+    // If all elements are equal, return true
+    return true;
+}
+
 export async function GET(
    req: NextRequest,
    { params }: { params: { slug: string}}
 ) {
   const searchParams = req.nextUrl.searchParams
   const single = searchParams.get('single')
+  const frames = searchParams.get('frames') || '100'
   const color = searchParams.get('color')
 
   const getColor = () => {
@@ -129,7 +147,7 @@ export async function GET(
 
   // Draw the horizontal grid lines
   for (let i = num; i < width; i += (num+1)) {
-    for (let j = num; j < width - num; j++) {
+    for (let j = num + 4; j < width - num + 4; j++) {
       grid[(i*width) + j] = 1
     }
   }
@@ -137,7 +155,7 @@ export async function GET(
   // Draw the vertical grid lines
   for (let i = num; i < width; i += (num+1)) {
     for (let j = num; j < height - 4; j++) {
-      grid[(j*width) + i] = 1
+      grid[(j*width) + i + 4] = 1
     }
   }
 
@@ -146,7 +164,7 @@ export async function GET(
 
     for (let i = 0; i < num; i++) {
       for (let j = 0; j < num; j++) {
-        grid[idx + i + (width * j)] = color
+        grid[4 + idx + i + (width * j)] = color
       }
     }
   }
@@ -161,9 +179,13 @@ export async function GET(
   // Initialize the buffer using the index bitmap
   const full = new Uint8Array(index)
 
+  const prev = new Uint8Array(data.length)
+  let notMovingCount = 0
+
   const gif = GIFEncoder()
-  const frames = single ? 1 : 100
-  for (let i = 0; i < frames; i++) {
+  const count = parseInt(frames) || 100
+  
+  for (let i = 0; i < count; i++) {
     // Update the cells
     let t = 0
     for (let row = 0; row < rows; row++) {
@@ -188,12 +210,28 @@ export async function GET(
         full[pos++] = grid[k++]
       }
     }
+
     // Write the full buffer as a frame
     gif.writeFrame(full, size, size, { palette, delay: 250 })
+
     // Not moving anymore?
+    if (areUint8ArraysEqual(data, prev)) {
+      if (notMovingCount > 2) {
+        break;
+      }
+      notMovingCount += 1
+    } else {
+      notMovingCount = 0
+    }
+
+    // No cells active?
     if (data.find(p => p > 0) == undefined) {
       break;
     }
+
+    // Keep track of the previous data
+    prev.set(data)
+
     // Update the cell stats
     computeNextFrame(data, rows, cols)
   }
