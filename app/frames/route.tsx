@@ -71,14 +71,14 @@ const handleRequest = frames(async (ctx: any) => {
 
   if (count == 0) {
     if (initCells && initColor && initCount) {
-      cells = decodeCells(initCells, 21, 24)
+      cells = decodeCells(initCells, 21, 23)
       color = getColor(initColor)
       count = parseInt(initCount)
     } else {
       cells = []
       for (let i = 0; i < 21; i++) {
         const row = []
-        for (let j = 0; j < 24; j++) {
+        for (let j = 0; j < 23; j++) {
           row.push(false)
         }
         cells.push(row)
@@ -102,11 +102,21 @@ const handleRequest = frames(async (ctx: any) => {
   }
 
   if (mode == 0) {
+    const inputText: string | undefined = ctx.message.inputText?.toLowerCase()
+    if (inputText) {
+      const inputCells = inputText.split(' ')
+      const row = inputCells[0].charCodeAt(0) - 'a'.charCodeAt(0) 
+      const col = inputCells[0].charCodeAt(1) - 'a'.charCodeAt(0) 
+      cells[row][col] = !cells[row][col]
+    }
+
     const encoded = encodeCells(cells)
+    console.log(encoded)
     const colorStr =
       color.red.toString(16).padStart(2, '0') +
       color.green.toString(16).padStart(2, '0') +
       color.blue.toString(16).padStart(2, '0')
+
     return {
       image: getHostName() +
         `/image/${encoded}?color=${colorStr}&frames=1&ts=${timestamp}`,

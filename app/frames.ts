@@ -24,25 +24,16 @@ const getHubRoute = (): string => {
 }
 
 export const encodeCells = (cells: boolean[][]): string => {
-  // Flatten the 2D array and convert boolean values to bits
-  let bitString = cells
-    .flat()
-    .map((val) => (val ? "1" : "0"))
-    .join("");
-
-  // Pad the bit string to make its length a multiple of 6
-  while (bitString.length % 6 !== 0) {
-    bitString += "0"; // pad with zeros at the end if necessary
-  }
-
-  // Convert bit string to Base64
-  const binaryString = bitString
-    .match(/.{1,6}/g)
-    ?.map((bits) => parseInt(bits, 2));
-  if (!binaryString) {
-    return ''
-  }
-  return btoa(String.fromCharCode.apply(null, binaryString));
+  return Buffer.from(
+    cells
+      .flat()
+      .map((b) => (b ? 1 : 0))
+      .reduce((acc: number[], bit, index) => {
+        const byteIndex = Math.floor(index / 8);
+        acc[byteIndex] = (acc[byteIndex] || 0) | (bit << (7 - (index % 8)));
+        return acc;
+      }, [])
+  ).toString("base64");
 }
 
 export const decodeCells = (
