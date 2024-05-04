@@ -1,6 +1,23 @@
 /* eslint-disable react/jsx-key */
 import { Button } from "frames.js/next";
 import { State, frames, getHostName } from "../frames";
+import { decodeCells, encodeCells } from "../frames";
+
+const getColor = (colorString: string) => {
+  if (colorString == undefined) {
+    return {
+      red: 40,
+      green: 220,
+      blue: 220
+    }
+  }
+  const num = parseInt(colorString, 16)
+  return {
+    red: (num >> 16) & 0xFF,
+    green: (num >> 8) & 0xFF,
+    blue: num & 0xFF
+  }
+}
 
 const handleRequest = frames(async (ctx: any) => {
   const timestamp = `${Date.now()}`
@@ -48,19 +65,28 @@ const handleRequest = frames(async (ctx: any) => {
   const mode = ctx.searchParams?.mode || 0
   const state = ctx.state as State
 
-  let cells = initCells
-  let count = initCount
-  let color = initColor
-  if (!cells) {
-    cells = state.cells
-  }
-  if (!count) {
-    count = state.count
-  }
-  if (!color) {
-    color = state.color
-  }
+  let cells = state.cells
+  let count = state.count
+  let color = state.color
 
+  if (count == 0) {
+    if (initCells && initColor && initCount) {
+      cells = decodeCells(initCells, 21, 24)
+      color = getColor(initColor)
+      count = parseInt(initCount)
+    } else {
+      cells = []
+      for (let i = 0; i < 21; i++) {
+        const row = []
+        for (let j = 0; j < 24; j++) {
+          row.push(false)
+        }
+        cells.push(row)
+      } 
+      count = 100
+    }
+  }
+  
   // Modes:
   // 0 - Edit
   // 1 - Instructions
@@ -76,7 +102,7 @@ const handleRequest = frames(async (ctx: any) => {
   }
 
   if (mode == 0) {
-    const encoded = '000020000020000C1'
+    const encoded = encodeCells(cells)
     const colorStr =
       color.red.toString(16).padStart(2, '0') +
       color.green.toString(16).padStart(2, '0') +
@@ -110,7 +136,7 @@ const handleRequest = frames(async (ctx: any) => {
     };
   }
 
-  const encoded = '000020000020000C1'
+  const encoded = encodeCells(cells)
   const colorStr =
     color.red.toString(16).padStart(2, '0') +
     color.green.toString(16).padStart(2, '0') +

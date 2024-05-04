@@ -1,8 +1,25 @@
 import { fetchMetadata } from "frames.js/next";
 import { getHostName } from "./frames";
 
-export async function generateMetadata() {
+type Props = {
+  params: { id: string }
+  searchParams: { [key: string]: string | string[] | undefined }
+}
+
+export async function generateMetadata({ searchParams }: Props) {
   const routeUrl = new URL("/frames", getHostName())
+
+  for (let key in searchParams) {
+    let value = searchParams[key];
+    if (value !== undefined) {
+      if (Array.isArray(value)) {
+        value.forEach(val => routeUrl.searchParams.append(key, val));
+      } else {
+        routeUrl.searchParams.append(key, value);
+      }
+    }
+  }
+
   const metaData = await fetchMetadata(routeUrl);
   return {
     title: "Frame of Life",

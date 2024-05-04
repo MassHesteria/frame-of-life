@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 const { GIFEncoder, applyPalette } = require('gifenc');
+import { decodeCells } from '../../frames';
 import path from 'path'
 
 const { promisify } = require("util");
@@ -24,74 +25,74 @@ async function readImage(file: string) {
 
 // Function to get the value of a cell at a specific row and column
 function getCellValue(
-   grid: Uint8Array,
-   rows: number,
-   cols: number,
-   row: number,
-   col: number
+  grid: boolean[],
+  rows: number,
+  cols: number,
+  row: number,
+  col: number
 ) {
-   if (row < 0 || row >= rows || col < 0 || col >= cols) {
-      return 0; // Out of bounds, treat as dead
-   }
-   return grid[row * cols + col];
+  if (row < 0 || row >= rows || col < 0 || col >= cols) {
+    return 0; // Out of bounds, treat as dead
+  }
+  return grid[row * cols + col] ? 1 : 0;
 }
 
 // Function to count the number of live neighbors for a cell
 function countLiveNeighbors(
-   grid: Uint8Array,
-   rows: number,
-   cols: number,
-   row: number,
-   col: number
+  grid: boolean[],
+  rows: number,
+  cols: number,
+  row: number,
+  col: number
 ) {
-   let count = 0;
-   for (let dr = -1; dr <= 1; dr++) {
-      for (let dc = -1; dc <= 1; dc++) {
-         if (dr === 0 && dc === 0) continue; // Skip the current cell
-         count += getCellValue(grid, rows, cols, row + dr, col + dc);
-      }
-   }
-   return count;
+  let count = 0;
+  for (let dr = -1; dr <= 1; dr++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      if (dr === 0 && dc === 0) continue; // Skip the current cell
+      count += getCellValue(grid, rows, cols, row + dr, col + dc);
+    }
+  }
+  return count;
 }
 
 // Glider: 000020000020000C1
 
-const computeNextFrame = (data: Uint8Array, rows: number, cols: number) => {
-   const newGrid = new Uint8Array(rows * cols);
-   for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-         const neighbors = countLiveNeighbors(data, rows, cols, row, col);
-         const cell = getCellValue(data, rows, cols, row, col);
-         if (cell === 1) {
-            // Any live cell with fewer than two live neighbors dies
-            // Any live cell with two or three live neighbors lives
-            // Any live cell with more than three live neighbors dies
-            newGrid[row * cols + col] =
-               neighbors === 2 || neighbors === 3 ? 1 : 0;
-         } else {
-            // Any dead cell with exactly three live neighbors becomes a live cell
-            newGrid[row * cols + col] = neighbors === 3 ? 1 : 0;
-         }
+const computeNextFrame = (data: boolean[], rows: number, cols: number) => {
+  const newGrid = [...data];
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const neighbors = countLiveNeighbors(data, rows, cols, row, col);
+      const cell = getCellValue(data, rows, cols, row, col);
+      if (cell === 1) {
+        // Any live cell with fewer than two live neighbors dies
+        // Any live cell with two or three live neighbors lives
+        // Any live cell with more than three live neighbors dies
+        newGrid[row * cols + col] =
+          neighbors === 2 || neighbors === 3 ? true : false;
+      } else {
+        // Any dead cell with exactly three live neighbors becomes a live cell
+        newGrid[row * cols + col] = neighbors === 3 ? true : false;
       }
-   }
-   newGrid.forEach((v, i) => (data[i] = v));
+    }
+  }
+  newGrid.forEach((v, i) => (data[i] = v));
 };
 
-function areUint8ArraysEqual(array1: Uint8Array, array2: Uint8Array) {
-    // Check if the arrays have the same length
-    if (array1.length !== array2.length) {
-        return false;
+function areBoolArraysEqual(array1: boolean[], array2: boolean[]) {
+  // Check if the arrays have the same length
+  if (array1.length !== array2.length) {
+    return false;
+  }
+
+  // Iterate over each element and compare
+  for (let i = 0; i < array1.length; i++) {
+    if (array1[i] !== array2[i]) {
+      return false;
     }
-    
-    // Iterate over each element and compare
-    for (let i = 0; i < array1.length; i++) {
-        if (array1[i] !== array2[i]) {
-            return false;
-        }
-    }
-    
-    // If all elements are equal, return true
-    return true;
+  }
+
+  // If all elements are equal, return true
+  return true;
 }
 
 export async function GET(
@@ -134,15 +135,15 @@ export async function GET(
   const width = size
   const height = size - 40
   const grid = new Uint8Array(width*height)
-  const data = new Uint8Array(rows*cols)
+  const data = decodeCells(slug, rows, cols).flat();
 
-  let pos = 0
-  for (let i = 0; i < slug.length; i++) {
-    const hex = parseInt(slug[i], 16)
-    for (let j = 0; j < 4; j++) {
-      data[pos++] = (hex >> j) & 0x1
-    }
-  }
+  //let pos = 0
+  //for (let i = 0; i < slug.length; i++) {
+    //const hex = parseInt(slug[i], 16)
+    //for (let j = 0; j < 4; j++) {
+      //data[pos++] = (hex >> j) & 0x1
+    //}
+  //}
 
   // Draw the horizontal grid lines
   for (let i = num; i < width; i += (num+1)) {
@@ -169,7 +170,7 @@ export async function GET(
   }
 
   const logo = size * 40
-  let backgroundPath = path.join(process.cwd(), 'background-by-hand.png');
+  let backgroundPath = path.join(process.cwd(), 'background.png');
   const { img_data } = await readImage(backgroundPath)
 
   // Apply palette to RGBA data to get an indexed bitmap
@@ -178,7 +179,7 @@ export async function GET(
   // Initialize the buffer using the index bitmap
   const full = new Uint8Array(index)
 
-  const prev = new Uint8Array(data.length)
+  let prev: boolean[] = []
   let notMovingCount = 0
 
   const gif = GIFEncoder()
@@ -189,7 +190,7 @@ export async function GET(
     let t = 0
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
-        if (data[t++] == 1) {
+        if (data[t++]) {
           setCell(row + 1, col + 1, 2)
         } else {
           setCell(row + 1, col + 1, 0)
@@ -211,10 +212,10 @@ export async function GET(
     }
 
     // Write the full buffer as a frame
-    gif.writeFrame(full, size, size, { palette, delay: 250 })
+    gif.writeFrame(full, size, size, { palette, delay: 600 })
 
     // Not moving anymore?
-    if (areUint8ArraysEqual(data, prev)) {
+    if (areBoolArraysEqual(data, prev)) {
       if (notMovingCount > 2) {
         break;
       }
@@ -224,12 +225,12 @@ export async function GET(
     }
 
     // No cells active?
-    if (data.find(p => p > 0) == undefined) {
+    if (data.find(p => p) == undefined) {
       break;
     }
 
     // Keep track of the previous data
-    prev.set(data)
+    prev = [...data]
 
     // Update the cell stats
     computeNextFrame(data, rows, cols)
