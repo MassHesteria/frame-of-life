@@ -105,9 +105,15 @@ const handleRequest = frames(async (ctx: any) => {
     const inputText: string | undefined = ctx.message.inputText?.toLowerCase()
     if (inputText) {
       const inputCells = inputText.split(' ')
-      const row = inputCells[0].charCodeAt(0) - 'a'.charCodeAt(0) 
-      const col = inputCells[0].charCodeAt(1) - 'a'.charCodeAt(0) 
-      cells[row][col] = !cells[row][col]
+      console.log(inputCells)
+      inputCells.forEach((cell: string) => {
+        if (cell.length != 2) {
+          return;
+        }
+        const row = cell.charCodeAt(0) - 'a'.charCodeAt(0) 
+        const col = cell.charCodeAt(1) - 'a'.charCodeAt(0) 
+        cells[row][col] = !cells[row][col]
+      })
     }
 
     const encoded = encodeCells(cells)
