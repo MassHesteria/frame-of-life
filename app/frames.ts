@@ -36,6 +36,14 @@ export const encodeCells = (cells: boolean[][]): string => {
   ).toString("base64");
 }
 
+export const encodeColor = (color: Color): string => {
+  return (
+    color.red.toString(16).padStart(2, "0") +
+    color.green.toString(16).padStart(2, "0") +
+    color.blue.toString(16).padStart(2, "0")
+  );
+};
+
 export const decodeCells = (
   encoded: string,
   rows: number,
@@ -68,6 +76,22 @@ export const decodeCells = (
   }
   return result;
 };
+
+export const decodeColor = (colorString: string): Color => {
+  if (colorString == undefined) {
+    return {
+      red: 40,
+      green: 220,
+      blue: 220
+    }
+  }
+  const num = parseInt(colorString, 16)
+  return {
+    red: (num >> 16) & 0xFF,
+    green: (num >> 8) & 0xFF,
+    blue: num & 0xFF
+  }
+}
 
 //-------------------------------------------------------------------
 // Frame setup
