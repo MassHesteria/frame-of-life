@@ -39,7 +39,7 @@ const getShareLink = (cells: boolean[][], color: Color, count: number) => {
   return shareLink
 };
 
-const getButton_Instructions = () => getButtonMode(3, "Instructions 📄");
+const getButton_Instructions = () => getButtonMode(3, "Help 📄");
 const getButton_Examples = () => getButtonMode(2, "Examples 📂");
 const getButton_Play = () => getButtonMode(1, "Play ▶");
 const getButton_Edit = () => getButtonMode(0, "Edit ✏");
@@ -103,15 +103,9 @@ const handleRequest = frames(async (ctx: any) => {
       color = decodeColor(initColor);
       count = parseInt(initCount);
     } else {
-      cells = [];
-      for (let i = 0; i < 21; i++) {
-        const row = [];
-        for (let j = 0; j < 23; j++) {
-          row.push(false);
-        }
-        cells.push(row);
-      }
-      count = 100;
+      cells = decodeCells('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAoAACIAADgAAAAAAxgAEUQAYowBBQQBatAAAAAAAAAA==', 21, 23)
+      color = decodeColor(null);
+      count = 200;
     }
   } else {
     if (initCells) {

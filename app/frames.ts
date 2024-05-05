@@ -77,12 +77,12 @@ export const decodeCells = (
   return result;
 };
 
-export const decodeColor = (colorString: string): Color => {
-  if (colorString == undefined) {
+export const decodeColor = (colorString: string | null): Color => {
+  if (colorString == null) {
     return {
-      red: 40,
-      green: 220,
-      blue: 220
+      red: 12,
+      green: 134,
+      blue: 192
     }
   }
   const num = parseInt(colorString, 16)
@@ -116,10 +116,6 @@ export const frames = createFrames<State>({
   initialState: {
     cells: [],
     count: 0,
-    color: {
-      red: 40,
-      green: 220,
-      blue: 220
-    }
+    color: decodeColor(null)
   }
 });

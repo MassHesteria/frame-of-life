@@ -1,4 +1,8 @@
+import { decodeColor } from "@/app/frames"
+
 export const Instructions = () => {
+  const defaultColor = decodeColor(null)
+  const colorCode = `rgb(${defaultColor.red}, ${defaultColor.green}, ${defaultColor.blue})`
   return (
     <div tw="flex h-full w-full flex-col" style={{backgroundColor: '#F0F0F0'}}>
       <div tw="flex flex-col w-full pt-12 px-4 items-center">
@@ -7,7 +11,7 @@ export const Instructions = () => {
         </h2>
       </div>
       <div tw="flex flex-col px-14">
-        <span tw="text-6xl" style={{color: '#18BCBC'}}>Instructions</span>
+        <span tw="text-6xl" style={{color: colorCode}}>Instructions</span>
         <span tw="pt-4">
           The Game of Life has a grid of square cells which have two states, live or dead. Each time step,
           cells interact with their eight neighbors using these rules:
@@ -19,7 +23,7 @@ export const Instructions = () => {
         <span tw='pl-20'>live cells.</span>
         <span tw="pt-8">
           Select the Edit ✏ button, then set the initial state of cells by typing pairs of letters (e.g., bh = row b, col h)
-          and press Toggle ☑.
+          and pressing Toggle ☑.
           Press Play ▶ to visualize the game.
         </span>
       </div>

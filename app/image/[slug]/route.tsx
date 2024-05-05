@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 const { GIFEncoder, applyPalette } = require('gifenc');
-import { decodeCells } from '../../frames';
+import { decodeCells, decodeColor } from '../../frames';
 import path from 'path'
 
 const { promisify } = require("util");
@@ -100,20 +100,8 @@ export async function GET(
    { params }: { params: { slug: string}}
 ) {
   const searchParams = req.nextUrl.searchParams
-  const frames = searchParams.get('frames') || '100'
-  const color = searchParams.get('color')
-
-  const getColor = () => {
-    if (color == undefined) {
-      return [ 40, 220, 220 ]
-    }
-    const num = parseInt(color, 16)
-    return [
-      (num >> 16) & 0xFF,
-      (num >> 8) & 0xFF,
-      num & 0xFF
-    ]
-  }
+  const frames = searchParams.get('frames') || '200'
+  const color = decodeColor(searchParams.get('color'))
 
   const size = 374
   const num = 14
@@ -122,12 +110,11 @@ export async function GET(
   const cols = 23
 
   const { slug } = params;
-  //console.log(slug);
 
   const palette = [
     [240, 240, 240],
     [210, 210, 210],
-    getColor(),
+    [color.red, color.green, color.blue],
     [128, 0, 128],
     [0, 0, 0],
   ]
@@ -136,14 +123,6 @@ export async function GET(
   const height = size - 40
   const grid = new Uint8Array(width*height)
   const data = decodeCells(slug, rows, cols).flat();
-
-  //let pos = 0
-  //for (let i = 0; i < slug.length; i++) {
-    //const hex = parseInt(slug[i], 16)
-    //for (let j = 0; j < 4; j++) {
-      //data[pos++] = (hex >> j) & 0x1
-    //}
-  //}
 
   // Draw the horizontal grid lines
   for (let i = num; i < width; i += (num+1)) {
@@ -183,7 +162,7 @@ export async function GET(
   let notMovingCount = 0
 
   const gif = GIFEncoder()
-  const count = parseInt(frames) || 100
+  const count = parseInt(frames) || 200
   
   for (let i = 0; i < count; i++) {
     // Update the cells
@@ -212,7 +191,7 @@ export async function GET(
     }
 
     // Write the full buffer as a frame
-    gif.writeFrame(full, size, size, { palette, delay: 600 })
+    gif.writeFrame(full, size, size, { palette, delay: 500 })
 
     // Not moving anymore?
     if (areBoolArraysEqual(data, prev)) {
