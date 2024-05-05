@@ -2,6 +2,7 @@
 import { Button } from "frames.js/next";
 import { State, frames, getHostName } from "../frames";
 import { decodeCells, encodeCells } from "../frames";
+import { Instructions } from "./compoments/instructions";
 
 const getColor = (colorString: string) => {
   if (colorString == undefined) {
@@ -18,6 +19,24 @@ const getColor = (colorString: string) => {
     blue: num & 0xFF
   }
 }
+
+const getBaseRoute = () => {
+  return getHostName() + `/frames?ts=${Date.now()}`
+}
+
+const getButtonMode = (mode: number, title: string) => {
+  return (
+    <Button action="post" target={getBaseRoute() + `&mode=${mode}`}>
+      {title}
+    </Button>
+  )
+}
+
+const getButton_Instructions = () => getButtonMode(3, 'Instructions')
+const getButton_Options = () => getButtonMode(2, 'Options')
+const getButton_Play = () => getButtonMode(1, "Play")
+const getButton_Edit = () => getButtonMode(0, "Edit")
+const getButton_Toggle = () => getButtonMode(0, "Toggle Cells")
 
 const handleRequest = frames(async (ctx: any) => {
   const timestamp = `${Date.now()}`
@@ -41,9 +60,7 @@ const handleRequest = frames(async (ctx: any) => {
           <Button action="post" target={baseRoute + `&mode=0&cells=${initCells}&color=${initColor}&count=${initCount}`}>
             Start
           </Button>,
-          <Button action="post" target={baseRoute + '&mode=1'}>
-            Instructions
-          </Button>,
+          getButton_Instructions()
         ]
       };
     }
@@ -55,9 +72,7 @@ const handleRequest = frames(async (ctx: any) => {
         <Button action="post" target={baseRoute}>
           Start
         </Button>,
-        <Button action="post" target={baseRoute + '&mode=1'}>
-          Instructions
-        </Button>,
+        getButton_Instructions()
       ]
     };
   }
@@ -89,9 +104,9 @@ const handleRequest = frames(async (ctx: any) => {
   
   // Modes:
   // 0 - Edit
-  // 1 - Instructions
+  // 1 - Play
   // 2 - Options
-  // 3 - Play
+  // 3 - Instructions
   //
   // NOTES:
   // - Allow share without button press
@@ -101,6 +116,30 @@ const handleRequest = frames(async (ctx: any) => {
     throw new Error('Could not validate request')
   }
 
+  if (mode == 3) {
+    return {
+      image:
+        <>
+          <Instructions />
+        </>,
+      imageOptions: {
+        aspectRatio: '1:1',
+      },
+      state: {
+        cells,
+        count,
+        color
+      },
+      buttons: [
+        getButton_Play(),
+        getButton_Edit(),
+        getButton_Options(),
+        <Button action="link" target={baseRoute + "&mode=2"}>
+          Share
+        </Button>,
+      ],
+    }
+  }
   if (mode == 0) {
     const inputText: string | undefined = ctx.message.inputText?.toLowerCase()
     if (inputText) {
@@ -117,7 +156,6 @@ const handleRequest = frames(async (ctx: any) => {
     }
 
     const encoded = encodeCells(cells)
-    console.log(encoded)
     const colorStr =
       color.red.toString(16).padStart(2, '0') +
       color.green.toString(16).padStart(2, '0') +
@@ -136,18 +174,10 @@ const handleRequest = frames(async (ctx: any) => {
       },
       textInput: 'Enter cells: aw bc ...',
       buttons: [
-        <Button action="post" target={baseRoute + "&mode=1"}>
-          Play
-        </Button>,
-        <Button action="post" target={baseRoute}>
-          Toggle Cell
-        </Button>,
-        <Button action="post" target={baseRoute + "&mode=2"}>
-          Options
-        </Button>,
-        <Button action="post" target={baseRoute + "&mode=2"}>
-          Instructions
-        </Button>,
+        getButton_Play(),
+        getButton_Toggle(),
+        getButton_Options(),
+        getButton_Instructions(),
       ],
     };
   }
@@ -169,94 +199,14 @@ const handleRequest = frames(async (ctx: any) => {
       color
     },
     buttons: [
-      <Button action="post" target={baseRoute + "&mode=0"}>
-        Edit
-      </Button>,
-      <Button action="post" target={baseRoute + "&mode=2"}>
-        Options
-      </Button>,
-      <Button action="post" target={baseRoute + "&mode=3"}>
-        Instructions
-      </Button>,
+      getButton_Edit(),
+      getButton_Options(),
+      getButton_Instructions(),
       <Button action="link" target={baseRoute + "&mode=2"}>
         Share
       </Button>,
     ],
   };
-
-    /*
-    console.log(JSON.stringify(ctx))
-    const fid = 373258
-    let values = await getPFPs(fid)
-    if (values.length <= 0) {
-      return {
-        image: (
-          <div>Install Action and Bookmark PFPs</div>
-        ),
-        buttons: [
-          <Button action="post" target={baseRoute}>
-            Click
-          </Button>,
-        ],
-      }
-    }
-
-    if (ctx.pressedButton) {
-      if (ctx.pressedButton.index == 1) {
-        state.index = (state.index + 1) % values.length
-      } else if (ctx.pressedButton.index == 2) {
-        await removePFP(fid, values[state.index])
-        values = await getPFPs(fid)
-        state.index %= values.length
-      }
-    }
-
-    const pfp = values[state.index]
-    const userData = await getUserDataForFid({ fid: pfp.fid })
-    const profileLink = `https://warpcast.com`
-    let buttonText = userData?.displayName
-    if (!buttonText) {
-      buttonText = 'No profile available'
-    }
-
-    const getButtons = () => {
-      // Show remove button for manage mode
-      if (state.manage) {
-        return [
-          <Button action="post" target={baseRoute}>
-            Next ⏭
-          </Button>,
-          <Button action="post" target={baseRoute}>
-            Remove ❌
-          </Button>,
-          <Button action="link" target={profileLink}>
-            {buttonText}
-          </Button>,
-        ]
-      }
-      return [
-          <Button action="post" target={baseRoute}>
-            Next ⏭
-          </Button>,
-          <Button action="link" target={profileLink}>
-            {buttonText}
-          </Button>,
-      ]
-    }
-
-    return {
-      image: pfp.url,
-      imageOptions: {
-        aspectRatio: '1:1',
-      },
-      buttons: getButtons(),
-      state
-    }
-   }
-
-  const installLink = 'https://warpcast.com/~/add-cast-action?url=' +
-    encodeURIComponent(getHostName() + '/action')*/
-
 });
 
 export const GET = handleRequest;
