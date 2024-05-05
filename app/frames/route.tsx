@@ -3,6 +3,7 @@ import { Button } from "frames.js/next";
 import { State, frames, getHostName } from "../frames";
 import { decodeCells, encodeCells } from "../frames";
 import { Instructions } from "./compoments/instructions";
+import { Examples } from "./compoments/examples";
 
 const getColor = (colorString: string) => {
   if (colorString == undefined) {
@@ -32,11 +33,11 @@ const getButtonMode = (mode: number, title: string) => {
   )
 }
 
-const getButton_Instructions = () => getButtonMode(3, 'Instructions')
-const getButton_Options = () => getButtonMode(2, 'Options')
-const getButton_Play = () => getButtonMode(1, "Play")
-const getButton_Edit = () => getButtonMode(0, "Edit")
-const getButton_Toggle = () => getButtonMode(0, "Toggle Cells")
+const getButton_Instructions = () => getButtonMode(3, 'Instructions 📄')
+const getButton_Examples = () => getButtonMode(2, 'Examples 📂')
+const getButton_Play = () => getButtonMode(1, "Play ▶")
+const getButton_Edit = () => getButtonMode(0, "Edit ✏")
+const getButton_Toggle = () => getButtonMode(0, "Toggle ☑")
 
 const handleRequest = frames(async (ctx: any) => {
   const timestamp = `${Date.now()}`
@@ -100,6 +101,10 @@ const handleRequest = frames(async (ctx: any) => {
       } 
       count = 100
     }
+  } else {
+    if (initCells) {
+      cells = decodeCells(initCells, 21, 23)
+    }
   }
   
   // Modes:
@@ -118,10 +123,7 @@ const handleRequest = frames(async (ctx: any) => {
 
   if (mode == 3) {
     return {
-      image:
-        <>
-          <Instructions />
-        </>,
+      image: <Instructions />,
       imageOptions: {
         aspectRatio: '1:1',
       },
@@ -133,13 +135,37 @@ const handleRequest = frames(async (ctx: any) => {
       buttons: [
         getButton_Play(),
         getButton_Edit(),
-        getButton_Options(),
+        getButton_Examples(),
         <Button action="link" target={baseRoute + "&mode=2"}>
           Share
         </Button>,
       ],
     }
   }
+
+  if (mode == 2) {
+    const example_A = 'AAAAAAAAQAAAQAADgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=='
+    const example_B = 'AAAABgYAEhIAKlQBkCYEMMILnnQJAJAJMkAClAAFKABJkgEgEgXPOghhhAyBMAVKgAkJAAwMAAAAAAAAAA=='
+    const example_C = '===='
+    return {
+      image: <Examples />,
+      imageOptions: {
+        aspectRatio: '1:1',
+      },
+      state: {
+        cells,
+        count,
+        color
+      },
+      buttons: [
+        <Button action="post" target={baseRoute + `&mode=0&cells=${example_A}`}>A ✈</Button>,
+        <Button action="post" target={baseRoute + `&mode=0&cells=${example_B}`}>B 🚢</Button>,
+        <Button action="post" target={baseRoute + `&mode=0&cells=${example_C}`}>Clear ❌</Button>,
+        <Button action="post" target={baseRoute + `&mode=0`}>Back 🔙</Button>,
+      ],
+    }
+  }
+
   if (mode == 0) {
     const inputText: string | undefined = ctx.message.inputText?.toLowerCase()
     if (inputText) {
@@ -176,7 +202,7 @@ const handleRequest = frames(async (ctx: any) => {
       buttons: [
         getButton_Play(),
         getButton_Toggle(),
-        getButton_Options(),
+        getButton_Examples(),
         getButton_Instructions(),
       ],
     };
@@ -200,7 +226,7 @@ const handleRequest = frames(async (ctx: any) => {
     },
     buttons: [
       getButton_Edit(),
-      getButton_Options(),
+      getButton_Examples(),
       getButton_Instructions(),
       <Button action="link" target={baseRoute + "&mode=2"}>
         Share
