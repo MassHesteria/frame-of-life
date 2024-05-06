@@ -13,7 +13,7 @@ export const Instructions = () => {
       <div tw="flex flex-col px-14">
         <span tw="text-6xl" style={{color: colorCode}}>Instructions</span>
         <span tw="pt-4">
-          Conway's Game of Life has a grid of square cells which have two states, live or dead. Each time step,
+          Conway&apos;s Game of Life has a grid of square cells which have two states, live or dead. Each time step,
           cells interact with their eight neighbors using these rules:
         </span>
         <span tw="pl-10 pt-8">1. Live cells with fewer than two live neighbors die</span>
