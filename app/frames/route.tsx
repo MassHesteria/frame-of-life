@@ -26,7 +26,7 @@ const getButtonMode = (mode: number, title: string) => {
 
 const getShareLink = (cells: boolean[][], color: Color, count: number) => {
   const shareLink =
-    "https://warpcast.com/~/compose?text=Checkout what I made in Frame of Life!" +
+    "https://warpcast.com/~/compose?text=Check out what I made in Frame of Life!" +
     "&embeds[]=" +
     encodeURIComponent(
       getBaseRoute() +
