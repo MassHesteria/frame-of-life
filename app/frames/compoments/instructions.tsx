@@ -21,11 +21,21 @@ export const Instructions = () => {
         <span tw="pl-10 pt-6">3. Live cells with more than three live neighbors die</span>
         <span tw="pl-10 pt-6">4. Dead cells with exactly three live neighbors become</span>
         <span tw='pl-20'>live cells.</span>
-        <span tw="pt-8">
-          Select the Edit ✏ button, then set the initial state of cells by typing pairs of letters (e.g., bh = row b, col h)
-          and pressing Toggle ☑.
-          Press Play ▶ to visualize the game.
-        </span>
+        <div tw="flex flex-row pt-8" style={{flexWrap: 'wrap'}}>
+          <span tw="pr-3 pt-2">Select</span>
+          <span tw="py-2 px-3 border border-black">Edit ✏</span>
+          <span tw="pl-3 pt-2"> then adjust cell states by typing pairs of</span>
+        </div>
+        <div tw="flex flex-row pt-3" style={{flexWrap: 'wrap'}}>
+          <span tw="pt-2 pr-3">letters (e.g., bh = row b, col h) and clicking</span>
+          <span tw="py-2 px-3 border border-black">Toggle ☑</span>
+          <span tw="pl-1 pt-2 pr-3">.</span>
+        </div>
+        <div tw="flex flex-row pt-3" style={{flexWrap: 'wrap'}}>
+          <span tw="pt-2 pr-3">Press</span>
+          <span tw="py-2 px-3 border border-black">Play ▶</span>
+          <span tw="pt-2 pl-3">to visualize the game.</span>
+        </div>
       </div>
     </div>
   )
