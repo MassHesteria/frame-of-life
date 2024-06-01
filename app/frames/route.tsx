@@ -9,8 +9,8 @@ import {
   getHostName,
 } from "../frames";
 import { decodeCells, encodeCells } from "../frames";
-import { Instructions } from "./compoments/instructions";
-import { Examples } from "./compoments/examples";
+import { Instructions } from "./components/instructions";
+import { Examples } from "./components/examples";
 
 const getBaseRoute = () => {
   return getHostName() + `/frames?ts=${Date.now()}`;
