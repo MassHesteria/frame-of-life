@@ -16,13 +16,6 @@ export const getHostName = (): string => {
   return `${proto}://${host}`;
 }
 
-const getHubRoute = (): string => {
-  if (process.env['VERCEL_REGION']) {
-    return 'https://nemes.farcaster.xyz:2281'
-  }
-  return 'http://localhost:3010/hub'
-}
-
 export const encodeCells = (cells: boolean[][]): string => {
   return Buffer.from(
     cells
@@ -110,8 +103,9 @@ export type State = {
 }
  
 export const frames = createFrames<State>({
-  middleware: [farcasterHubContext({
-    hubHttpUrl: getHubRoute()
+  middleware: [farcasterHubContext(
+    process.env['VERCEL_REGION'] ? {} : {
+    hubHttpUrl: 'http://localhost:3010/hub'
   })],
   initialState: {
     cells: [],
